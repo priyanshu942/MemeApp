@@ -23,30 +23,54 @@ import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
+    var flag:Int=1
+    var temp:String?=null
     var imgurl:String?=null
+    var imgurl1:String?=null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        loadmeme()
+        loadmeme(flag)
     }
 
-    private fun loadmeme() {
+    private fun loadmeme(flag:Int):Unit {
         //val textView = findViewById<TextView>(R.id.text)
 // ...
 
 
 // Instantiate the RequestQueue.
         progressBar.visibility=View.VISIBLE
-        val queue = Volley.newRequestQueue(this)
+
         val url = "https://meme-api.com/gimme"
 
 // Request a string response from the provided URL.
         val jsonObjectRequest = JsonObjectRequest(
             Request.Method.GET, url,null,
+
             { response ->
                 // Display the first 500 characters of the response string.
-                 imgurl = response.getString("url")
+                 //temp=imgurl
+                //println("$temp")
+                imgurl1 = response.getString("url")
+
+
+
+
+                if(flag==1)
+                {
+                    temp=imgurl
+                    imgurl=imgurl1
+
+
+                }
+
+                else if(flag==0)
+                {
+                    imgurl=temp
+                }
+
 
                 Glide.with(this).load(imgurl).listener(object :RequestListener<Drawable>{
                     override fun onLoadFailed(
@@ -59,6 +83,7 @@ class MainActivity : AppCompatActivity() {
                         return false
                     }
 
+
                     override fun onResourceReady(
                         resource: Drawable?,
                         model: Any?,
@@ -69,18 +94,22 @@ class MainActivity : AppCompatActivity() {
                         progressBar.visibility=View.GONE
                         return false
                     }
+
+
                 }).into(memeimage)
+
+
             },
             {
-            Toast.makeText(this,"cant load",Toast.LENGTH_LONG).show()
+            Toast.makeText(this,"some error occured",Toast.LENGTH_LONG).show()
             //here we get error
             })
 
 // Add the request to the RequestQueue.
-        queue.add(jsonObjectRequest)
+        MySingleton.getInstance(this).addToRequestQueue(jsonObjectRequest)
     }
     fun next(view: View) {
-        loadmeme()
+        loadmeme(1)
     }
 
     fun share(view: View) {
@@ -89,5 +118,9 @@ class MainActivity : AppCompatActivity() {
         intent.putExtra(Intent.EXTRA_TEXT,"Here is the cool meme I got from redit $imgurl")
     val choser=Intent.createChooser(intent,"Shaare this meme...")
         startActivity(choser)
+    }
+
+    fun previous(view: View) {
+            loadmeme(0)
     }
 }
